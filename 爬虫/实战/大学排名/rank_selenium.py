@@ -15,7 +15,7 @@ def build():
 
     a=webdriver.Chrome(service=Service('chromedriver.exe'),options=t)
     return a
-
+#获取一条排名
 def one_content(tr):
     rank=tr.find_element(By.XPATH,'./td[1]/div').text.strip()
     name=tr.find_element(By.XPATH,'./td[2]/div/div[2]/div[1]/div/div/span').text.strip()
@@ -31,6 +31,7 @@ def one_content(tr):
         'rating':rating,
         'educational_level':educational_level
     }
+#获取一页信息
 def page_content(net):
     tbody=net.find_elements(By.XPATH,'//*[@id="content-box"]/div[2]/table/tbody/tr')
     page_data=[]
@@ -39,8 +40,7 @@ def page_content(net):
         page_data.append(tr)
     return page_data
 
-
-
+#存储数据
 def save_csv(all_data):
     with open('college_rank.csv','w',newline='',encoding='utf-8') as f:
         csvwriter=csv.writer(f)
