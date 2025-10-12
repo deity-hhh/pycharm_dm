@@ -37,12 +37,6 @@ def content(movie_url):
         movie_type = '无'
     country = soup.find('div', id="info").find('span', class_='pl', string='制片国家/地区:').next_sibling.strip()
     language = soup.find('div', id="info").find('span', class_='pl', string='语言:').next_sibling.strip()
-    release_date_list = soup.find('div', id="info").find_all('span', property="v:initialReleaseDate")
-    if release_date_list:
-        link = [actor.get_text(strip=True) for actor in release_date_list]
-        release_date = '/'.join(link)
-    else:
-        release_date = '无'
     duration = soup.find('div', id="info").find('span', property="v:runtime").text
     aka_string = soup.find('div', id="info").find('span', class_='pl', string='又名:')
     if aka_string:
@@ -69,7 +63,6 @@ def content(movie_url):
         'movie_type':movie_type,
         'country':country,
         'language':language,
-        'release_date':release_date,
         'duration':duration,
         'aka':aka,
         'score':score,
