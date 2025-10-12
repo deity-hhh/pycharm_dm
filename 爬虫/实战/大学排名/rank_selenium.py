@@ -39,7 +39,6 @@ def page_content(net):
         tr=one_content(t)
         page_data.append(tr)
     return page_data
-
 #存储数据
 def save_csv(all_data):
     with open('college_rank.csv','w',newline='',encoding='utf-8') as f:
@@ -47,7 +46,6 @@ def save_csv(all_data):
         csvwriter.writerow(all_data[0].keys())
         for data in all_data:
             csvwriter.writerow(data.values())
-
 if __name__ == '__main__':
     url='https://www.shanghairanking.cn/rankings/bcur/2024'
     net=build()
