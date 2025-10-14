@@ -23,7 +23,7 @@ def content(movie_url):
     resp.encoding='utf-8'
     soup=etree.HTML(resp.text)
     rank=soup.xpath('//*[@id="content"]/div[1]/span[1]/text()')[0].strip()
-    rank=re.findall(r'\d+',rank)
+    rank=re.findall(r'\d+',rank)[0].strip()
     name=soup.xpath('//*[@id="content"]/h1/span[1]/text()')[0].strip()
     year=soup.xpath('//*[@id="content"]/h1/span[2]/text()')[0].strip('()')
     director=soup.xpath('//*[@id="info"]/span[1]/span[2]/a/text()')[0].strip()
@@ -95,7 +95,7 @@ if __name__ == '__main__':
         'accept-language':'zh-CN,zh;q=0.9'
     }
     all_data=[]
-    for i in range(1):
+    for i in range(3):
         page=i*25
         page_url=f'https://movie.douban.com/top250?start={page}&filter='
         movie_urls=movie(page_url)

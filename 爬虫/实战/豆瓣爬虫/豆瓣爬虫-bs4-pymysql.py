@@ -90,8 +90,6 @@ def save_pymysql(data_list):
     cursor.execute(creat_table_sql)
     sql="insert into douban_top250(`rank`, name, year, director, actors, movie_type, country, language,duration, aka,score, score_people, five_star, four_star, three_star, two_star, one_star,summary_title, summary) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     for data in data_list:
-        release_date=data['release_date']
-        data['release_date']=release_date[:255] if len(release_date) > 255 else release_date
         cursor.execute(sql,(data['rank'],data['name'],data['year'],data['director'],data['actors'],data['movie_type'],
                         data['country'],data['language'],data['duration'],data['aka'],
                         data['score'],data['score_people'],data['five_star'],data['four_star'],
