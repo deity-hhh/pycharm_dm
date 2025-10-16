@@ -5,7 +5,6 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from concurrent.futures import ThreadPoolExecutor
 import time
 import datetime
 import pymysql
@@ -20,21 +19,37 @@ def build():
     a=webdriver.Chrome(service=Service('chromedriver.exe'),options=t)
     return a
 
+def scroll(net,wait,target_count=100):
+    wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div[1]/div[2]/div')))
+    current_divs = net.find_elements(By.XPATH, '//*[@id="app"]/div[1]/div[2]/div')
+    current_count = len(current_divs)
+    while current_count < target_count:
+        try:
+            last_div=current_divs[-1]
+            net.execute_script("arguments[0].scrollIntoView(false);", last_div)
+            time.sleep(3)
+            current_divs = net.find_elements(By.XPATH, '//*[@id="app"]/div[1]/div[2]/div')
+            new_count = len(current_divs)
+            if new_count == current_count:
+                break
+            current_count = new_count
+        except Exception as e:
+            print(f"滚动加载出错: {e}")
+            break
+    return current_divs
+
 #获取一条微博内容及评论
 def weibo(net,wait):
     all_weibo=[]     #每个元素都是字典
     all_weibo_comment=[]    #每个元素都是列表（代表一个微博的评论）
-    wait.until((EC.presence_of_element_located((By.XPATH,'//*[@id="app"]/div[1]/div[2]/div'))))
-    current_divs=net.find_elements(By.XPATH,'//*[@id="app"]/div[1]/div[2]/div')
-    print(f"找到 {len(current_divs)} 个微博div")
+    current_divs=scroll(net, wait, target_count=50)
+    total_available =len(current_divs)
+    print(f"共加载到 {total_available} 条微博，开始抓取数据")
     #获取微博内容
-    for i in range(100):
+    for i in range(total_available):
         time.sleep(2)
-        if i==1:
-            input()    #登入
         wait.until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="app"]/div[1]/div[2]/div')))
-        current_divs = net.find_elements(By.XPATH, '//*[@id="app"]/div[1]/div[2]/div')
-        #net.execute_script("arguments[0].scrollIntoView();", current_divs)
+        current_divs=scroll(net, wait, target_count=50)
         print(f"找到 {len(current_divs)} 个微博")
         try:
             if i>=len(current_divs):
@@ -105,7 +120,6 @@ def comment(weibo,wait,num):
     one_weibo_comment=[]
     wait.until(EC.presence_of_element_located((By.XPATH, '//div[contains(@class, "comment-content")]')))
     current_comments = wait.until(EC.presence_of_all_elements_located((By.XPATH, '//div[contains(@class, "comment-content")]/div')))
-    print(f"找到 {len(current_comments)} 条评论")
     for i in range(min(10, len(current_comments))):
         try:
             current_comments=wait.until(EC.presence_of_all_elements_located((By.XPATH, '//div[contains(@class, "comment-content")]/div')))
@@ -125,9 +139,7 @@ def comment(weibo,wait,num):
             comment_ip=c.find_element(By.XPATH,'.//div[@class="card-main"]//div[@class="m-box-center-a time"]').text.split('来自')[1].strip()
             one_comment={'weibo_id':weibo_id,'commenter':commenter,'comment_ip':comment_ip,'comment_time':comment_new_time.strftime('%Y-%m-%d %H:%M'),'comment_content':comment_content}
             one_weibo_comment.append(one_comment)
-            print(f'第{num}条微博的第{i+1}条评论获取成功！')
         except Exception as e:
-            print(f'第{num}条微博的第{i+1}条评论获取失败！')
             continue
     return one_weibo_comment
 
@@ -172,6 +184,7 @@ if __name__ == '__main__':
     url='https://m.weibo.cn/search?containerid=231522type%3D1%26t%3D10%26q%3D%23%E7%83%88%E5%A3%AB%E7%BA%AA%E5%BF%B5%E6%97%A5%23&isnewpage=1&featurecode=newtitle17'
     net=build()
     net.get(url)
+    input()  #登入
     time.sleep(2)
     wait = WebDriverWait(net, 10)
     utter_content=net.find_element(By.XPATH,'//*[@id="app"]/div[1]/div[1]/div[19]/div/div/div[1]/div/div/div/article/div[2]')
@@ -186,4 +199,5 @@ if __name__ == '__main__':
         if weibo_comment:
             save_comment(weibo_comment)
     print("over!")
+    net.quit()
 
